@@ -1,6 +1,6 @@
 // inherit from EventEmitter
 const EventEmitter = require('events').EventEmitter
-const axios = require("axios")
+const request = require("request-promise")
 
 const _sendAPI = require("./send")
 const FacebookEvent = require("./FacebookEvent")
@@ -29,11 +29,6 @@ class Bot extends EventEmitter {
         this.app_secret = opts.app_secret || false
         this.verify_token = opts.verify || false
 
-        //- axios instance for this bot
-        this._axios = axios.create({
-            baseURL: `https://graph.facebook.com/${opts['version'] || '2.6'}`
-        });
-
         if(opts.subscribe){
             this.subscribe()
         }
@@ -46,10 +41,15 @@ class Bot extends EventEmitter {
      * @return {*}
      */
     subscribe(cb){
-        return this._axios.post("/me/subscribed_apps", {}, {
-            params: { access_token: this.token }
-        }).then(ignored => {
-            if(cb) cb()
+        return request({
+            method: "GET",
+            url: "https://graph.facebook.com/2.6/me/subscribed_apps",
+            qs: this._getQs(),
+            json: true
+        }).then(body => {
+            if(body.error) return Promise.reject(body.error)
+            if(!cb) return body
+            cb(null, body)
         }).catch(error => {
             if(!cb) return Promise.reject(error)
             cb(error)
@@ -64,18 +64,18 @@ class Bot extends EventEmitter {
      * @return {Promise}
      */
     getProfile(id, cb){
-        return axios.get(`/${id}`, {
-            params: {
-                fields: "first_name,last_name,profile_pic,locale,timezone,gender",
-                access_token: this.token
-            }
-        }).then(resp => {
-            if(resp.data.error) return Promise.reject(resp.data.error)
-            if(!cb) return resp.data
-            cb(null, resp.data)
-        }).catch(error => {
-            if(!cb) return Promise.resolve(error)
-            cb(error)
+        return request({
+            method: "GET",
+            url: `https://graph.facebook.com/v2.6/${id}`,
+            qs: this._getQs({fields: "first_name,last_name,profile_pic,locale,timezone,gender"}),
+            json: true
+        }).then(body => {
+            if (body.error) return Promise.reject(body.error)
+            if (!cb) return body
+            cb(null, body)
+        }).catch(err => {
+            if (!cb) return Promise.reject(err)
+            cb(err)
         })
     }
 
@@ -88,17 +88,20 @@ class Bot extends EventEmitter {
      * @return {Promise}
      */
     setField (field, payload, cb) {
-        return this._axios.post("/me/messenger_profile", {
-            [field]: payload
-        }, {
-            params: { access_token: this.token }
-        }).then(data => {
-            if(data.data.error) return Promise.reject(data.data.error)
-            if(!cb) return data.data
-            cb(null, data.data)
-        }).catch(error => {
-            if(!cb) return Promise.reject(error)
-            cb(error)
+        return request({
+            method: 'POST',
+            uri: 'https://graph.facebook.com/v2.6/me/messenger_profile',
+            qs: this._getQs(),
+            json: {
+                [field]: payload
+            }
+        }).then(body => {
+            if (body.error) return Promise.reject(body.error)
+            if (!cb) return body
+            cb(null, body)
+        }).catch(err => {
+            if (!cb) return Promise.reject(err)
+            cb(err)
         })
     }
 
@@ -109,17 +112,20 @@ class Bot extends EventEmitter {
      * @return {Promise}
      */
     deleteField (field, cb) {
-        return this._axios.delete("/me/messenger_profile", {
-            fields: [field]
-        }, {
-            params: { access_token: this.token }
-        }).then(data => {
-            if(data.data.error) return Promise.reject(data.data.error)
-            if(!cb) return data.data
-            cb(null, data.data)
-        }).catch(error => {
-            if(!cb) return Promise.reject(error)
-            cb(error)
+        return request({
+            method: 'DELETE',
+            uri: 'https://graph.facebook.com/v2.6/me/messenger_profile',
+            qs: this._getQs(),
+            json: {
+                fields: [field]
+            }
+        }).then(body => {
+            if (body.error) return Promise.reject(body.error)
+            if (!cb) return body
+            cb(null, body)
+        }).catch(err => {
+            if (!cb) return Promise.reject(err)
+            cb(err)
         })
     }
 
@@ -159,12 +165,15 @@ class Bot extends EventEmitter {
                 return cb(new TypeError("'data' must either be a string or an instance of Message or Payload"))
         }
 
-        return this._axios.post("/me/messages", data, {
-            params: { access_token: this.token }
-        }).then(data => {
-            if(data.data.error) return Promise.reject(new Error(data.data.error))
-            if(!cb) return data.data
-            cb(null, data.data)
+        return request({
+            method: "POST",
+            url: "https://graph.facebook.com/v2.6/me/messages",
+            qs: this._getQs(),
+            json: data.json()
+        }).then(body => {
+            if(body.error) return Promise.reject(body.error)
+            if(!cb) return body
+            cb(null, body)
         }).catch(error => {
             if(!cb) return Promise.reject(error)
             cb(error)
@@ -227,6 +236,15 @@ class Bot extends EventEmitter {
                 return res.end("Method not allowed")
             }
         }
+    }
+
+    _getQs (qs) {
+        if (typeof qs === 'undefined') {
+            qs = {}
+        }
+        qs['access_token'] = this.token
+
+        return qs
     }
 }
 
