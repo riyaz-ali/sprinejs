@@ -219,7 +219,7 @@ class Bot extends EventEmitter {
         return (req, res) => {
             if(req.method === "GET"){
                 return this.handleVerification(req, res)
-            } else if(request.method === "POST"){~
+            } else if(req.method === "POST"){~
                 this.handleMessage(req.body)
                 this.res.end("OK")
             } else {
