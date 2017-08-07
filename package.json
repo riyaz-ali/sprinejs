@@ -11,7 +11,11 @@
     "bot"
   ],
   "author": "Riyaz Ali <riyazkagzi17@gmail.com>",
-  "license": "MIT",
+  "license": "See License in LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/riyaz-ali/sprinejs.git"
+  },
   "dependencies": {
     "axios": "^0.16.2"
   }

@@ -3,9 +3,8 @@
 A Node.js client for the [Facebook Messenger Platform](https://developers.facebook.com/docs/messenger-platform). The API is largely influenced by [messenger-bot](https://github.com/remixz/messenger-bot).
 
 ## Installation
-[TODO] : Add an NPM-Package
 ```bash
-npm install git+https://git@github.com/riyaz-ali/sprine.git
+npm install sprine
 ```
 
 ## Example
