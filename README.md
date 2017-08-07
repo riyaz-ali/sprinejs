@@ -11,6 +11,7 @@ npm install sprine
 ```js
 // express (or any connect-compatible app)
 const app = require("express")()
+const bodyParser = require("body-parser")
 
 // sprine bot
 const Bot = require("sprine").Bot
@@ -69,12 +70,17 @@ bot.on("message", (event, reply) => {
 })
 
 
+// use a middleware to parse post data. This is required from the application side.
+app.use(bodyParser.json())
+
 // add a middleare to your app to handle Messenger webhook calls
 app.use("/facebook", bot.middleware())
 
 // run
 app.listen(8080)
 ```
+
+**Note**: The application must provide a connect-compatible middleware to parse POST data or else the bot will raise an exception about missing data argument when a message is received.
 
 ## Reference
 

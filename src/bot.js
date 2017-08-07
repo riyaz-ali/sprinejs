@@ -178,14 +178,14 @@ class Bot extends EventEmitter {
      * @param {object} data
      */
     handleMessage(data){
-        if(data)
+        if(!data)
             return this.emit("error", new Error("Missing data object"))
 
         if(!data.object || data.object !== "page")
             return this.emit("error", new Error("Invalid subscription object"))
 
         // foreach entry
-        data.entries.forEach(entry => {
+        data.entry.forEach(entry => {
             entry.messaging.forEach(event => {
                 // foreach event
                 let fb_evt = new FacebookEvent(event)
@@ -221,7 +221,7 @@ class Bot extends EventEmitter {
                 return this.handleVerification(req, res)
             } else if(req.method === "POST"){~
                 this.handleMessage(req.body)
-                this.res.end("OK")
+                return res.end("OK")
             } else {
                 res.status(405)
                 return res.end("Method not allowed")
