@@ -84,7 +84,7 @@ app.listen(8080)
 
 ## Reference
 
-```
+```js
 class Bot extends EventEmitter
 ```
 
@@ -171,7 +171,7 @@ List of events:
 10. **unknown**: Fired when an unknown event is received.
 
 
-```
+```js
 class FacebookEvent
 ```
 
@@ -196,3 +196,12 @@ A getter-property to get the data object associated with the event. The shape of
 
 ## Send API
 For a reference to Send API, check the [documentation here](src/send/README.md)
+
+
+## Todo
+* Add classes to wrap message data recieved from Facebook and provide easy interface to work with that
+* Add custom callback for specific types of Postback payloads. For eg., we can have a `QuickReply` with a payload field set to `SOME_PAYLOAD`, then we can listen for that specific Postback by having something like, `bot.on('postback:SOME_PAYLOAD', (event, reply) => {...})`
+* Add tests
+* (Low Priority) Add some generic session/context management support within the bot itself. The argument for this is that some of us would be using this library alongwith other AI-services (like [api.ai](https://api.ai)) for which we may want to add some kinda session support to our bot
+
+PR for adding above mentioned features are welcomed! For other feature request or for reporting bugs use Github Issues.
