@@ -4,7 +4,7 @@ A Node.js client for the [Facebook Messenger Platform](https://developers.facebo
 
 ## Installation
 ```bash
-npm install sprine
+npm install git+https://github.com/riyaz-ali/sprinejs.git
 ```
 
 ## Example

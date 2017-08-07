@@ -169,7 +169,7 @@ class Bot extends EventEmitter {
             method: "POST",
             url: "https://graph.facebook.com/v2.6/me/messages",
             qs: this._getQs(),
-            json: data.json()
+            json: data
         }).then(body => {
             if(body.error) return Promise.reject(body.error)
             if(!cb) return body
