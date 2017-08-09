@@ -5,6 +5,9 @@ const request = require("request-promise")
 const _sendAPI = require("./send")
 const FacebookEvent = require("./FacebookEvent")
 
+const Middleware = require("./util/middleware")
+const transformations = require("./transformations")
+
 /**
  * class representing a single Bot
  * This is the base class for all interaction with the sprine facebook-messenger api
@@ -32,6 +35,13 @@ class Bot extends EventEmitter {
         if(opts.subscribe){
             this.subscribe()
         }
+
+        // setup middleware
+        this._middleware = new Middleware()
+        // add all transformations
+        transformations.forEach(tr => this._middleware.use(tr))
+        // shortcut to add middleware
+        this.use = this._middleware.use.bind(this._middleware)
     }
 
     /**
@@ -196,9 +206,13 @@ class Bot extends EventEmitter {
         // foreach entry
         data.entry.forEach(entry => {
             entry.messaging.forEach(event => {
-                // foreach event
-                let fb_evt = new FacebookEvent(event)
-                this.emit(fb_evt.type, fb_evt, this.sendMessage.bind(this, fb_evt.sender))
+                // foreach event, run them through the middlewares
+                this._middleware.exec(event)
+                    .then(result => {
+                        this.emit(result.type, result, this.sendMessage.bind(this, result.sender))
+                    }).catch(error =>{
+                        this.emit('error', error)
+                    })
             })
         })
     }
@@ -228,7 +242,7 @@ class Bot extends EventEmitter {
         return (req, res) => {
             if(req.method === "GET"){
                 return this.handleVerification(req, res)
-            } else if(req.method === "POST"){~
+            } else if(req.method === "POST"){
                 this.handleMessage(req.body)
                 return res.end("OK")
             } else {
